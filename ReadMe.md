@@ -50,7 +50,7 @@ tqdm==4.42.1
 
 ## Usage :
 
-To use a model for training or prediction, place the architectures files in the model's notebook folder. 
+To use a model for training or prediction, place the utils files in the model's notebook folder. 
 
 ## Training :
 
