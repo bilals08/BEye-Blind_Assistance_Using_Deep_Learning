@@ -1,5 +1,3 @@
-# ReadMe Github
-
 
 <img src="ReadMe%20Github%2037de4cc43ebc44a7bf7e1f356c3eeae3/Untitled.png" alt="drawing"/>
 
@@ -137,8 +135,15 @@ The size of the UNET with Efficient Net-b0 became too large and it took around 2
 
 Feel free to contact us for further details.
 
-**Sohaib Akhtar                                Ali Salman                                    Bilal Shabbir**
+**Sohaib Akhtar**
+*i170330@nu.edu.pk*
+*FAST NUCES, Islamabad*
 
-*i170330@nu.edu.pk                        i170350@nu.edu.pk                      i170124@nu.edu.pk*
+**Ali Salman**
+*i170350@nu.edu.pk*
+*FAST NUCES, Islamabad*
 
-*FAST NUCES, Islamabad                 FAST NUCES, Islamabad               FAST NUCES, Islamabad*
+**Muhammad Bilal Shabbir**
+ *i170124@nu.edu.pk*
+ *FAST NUCES, Islamabad*
+
