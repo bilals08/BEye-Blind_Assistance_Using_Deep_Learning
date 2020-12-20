@@ -19,7 +19,7 @@ FCHarDNet outperforms DeeplabV3+ and Unet for mIOU and Forward Pass Time based o
 
 ![ReadMe%20Github%2037de4cc43ebc44a7bf7e1f356c3eeae3/Capture6.png](ReadMe%20Github%2037de4cc43ebc44a7bf7e1f356c3eeae3/Capture6.png)
 
-<img src="ReadMe%20Github%2037de4cc43ebc44a7bf7e1f356c3eeae3/Capture7.png" alt="drawing" width="60%" height="50%"/>
+<img src="ReadMe%20Github%2037de4cc43ebc44a7bf7e1f356c3eeae3/Capture7.png" alt="drawing" width="50%" height="40%"/>
 
 All the models were trained and finetuned on ADE-20K Screen Parsing, COCO stuff, and Custom Sidewalk datasets for 17 classes including terrain awareness (Sidewalk & Floor, Road, Ground), obstacle detection, sky and building detection. The highlighted ones from the above table show the best performing ones.
 
