@@ -15,6 +15,9 @@ import time
 import pyttsx3
 import threading
 from io import BytesIO
+import face_recognition
+from face_recognition.api import face_encodings
+import os
 
 from flask import Flask,jsonify
 
@@ -24,12 +27,24 @@ from flask import Flask,jsonify
 app = Flask(__name__, template_folder='template')
 cors = CORS(app)
 
-camera = cv2.VideoCapture("video.mp4") #Loading demo video
-camera_depth = cv2.VideoCapture("depth.avi") #Loading demo video
+camera = cv2.VideoCapture("videof.mp4") #Loading demo video
+camera_depth = cv2.VideoCapture("depthf.mp4") #Loading demo video
 time.sleep(3)
 global index_add_counter
 index_add_counter=0
 
+## Face Detection
+train_encodings=[]
+train_names=[]
+
+images=os.listdir("images/train/")
+
+for image in images:
+    train_image = face_recognition.load_image_file(os.path.join("images/train/",image))
+    train_face_patch = face_recognition.face_locations(train_image, model="hog")
+    train_face_encodings=face_recognition.face_encodings(train_image, train_face_patch)
+    train_encodings.append(train_face_encodings[0])
+    train_names.append(image[:-5])
 
 
 train_id_to_color=np.array([(225 ,229 ,204),
@@ -89,7 +104,7 @@ def howNear(value):
 def threadingWindow(say_text):
     #print("djasjd")
     engine = pyttsx3.init()
-    engine.setProperty('rate', 400)
+    engine.setProperty('rate', 300)
     voices = engine.getProperty('voices')
     engine.setProperty('voice', voices[1].id)
     engine.say(say_text)
@@ -234,17 +249,32 @@ def to_data_uri(pil_img):
     data64 = base64.b64encode(data.getvalue())
     return u'data:img/jpeg;base64,'+data64.decode('utf-8')
 
+def faceDetection(test_image):
+    test_face_patches = face_recognition.face_locations(test_image, model="hog")
+    test_face_encodings=face_recognition.face_encodings(test_image, test_face_patches)
+    faces=[]
+    for encoding in test_face_encodings:
+        results = face_recognition.compare_faces(train_encodings, encoding)
+        if True:
+            index=results.index(True)
+            print(train_names[index], "exists")
+            faces.append(train_names[index])
+    if len(faces)!=0:
+        say_text=" ".join(faces)
+        say_text+=" Here"
+        Server_Up= threading.Thread(target=threadingWindow, args=(say_text,))
+        Server_Up.start()
+
+    return faces
+
 def gen_frames1():
     success, frame = camera.read() 
     success, depth = camera_depth.read()
-    # print("Depth",depth.shape)
+
     gray = cv2.cvtColor(depth, cv2.COLOR_BGR2GRAY)
-    # print("Gray", np.amax(gray))
-    # print("Frame",frame.shape)
-    # index_add_counter+=1
-    # print(index_add_counter)
     if not success or not success:
         return {}
+
     fr,labels=passImage(frame,gray.astype(np.uint8))
     frame1 = cv2.cvtColor(fr, cv2.COLOR_BGR2RGB)
     pil_image1 = to_image(frame1)
@@ -256,15 +286,43 @@ def gen_frames1():
 
     data = json.dumps({'frame1':image_uri1,'frame2':image_uri2, 'labels':labels})
     return data
+
+
+def gen_frames2():
+    success, frame = camera.read() 
+    success, depth = camera_depth.read()
+
+    gray = cv2.cvtColor(depth, cv2.COLOR_BGR2GRAY)
+    if not success or not success:
+        return {}
+    friends=faceDetection(frame)
+
+    pil_image1 = to_image(frame)
+    image_uri1 = to_data_uri(pil_image1)
+
+    frame2 = cv2.cvtColor(depth, cv2.COLOR_BGR2RGB)
+    pil_image2 = to_image(frame2)
+    image_uri2 = to_data_uri(pil_image2)
+
+    data = json.dumps({'frame1':image_uri1,'frame2':image_uri2, 'labels':friends})
+    return data
   
 
 @app.route('/video_feed', methods = ['GET'])    
 def video_feed():
     return gen_frames1()
 
+@app.route('/video_fr', methods = ['GET'])    
+def video_fr():
+    return gen_frames2()
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/face_recognision')
+def render_fr():
+    return render_template('face_recognision.html')
 
 @app.route('/live_feed')
 def render_feed():
