@@ -33,12 +33,15 @@ time.sleep(3)
 global index_add_counter
 index_add_counter=0
 
-## Face Detection
+## Face Detection training
 train_encodings=[]
 train_names=[]
 
 images=os.listdir("images/train/")
 
+'''''
+Adding Face Embeddings for training
+'''
 for image in images:
     train_image = face_recognition.load_image_file(os.path.join("images/train/",image))
     train_face_patch = face_recognition.face_locations(train_image, model="hog")
@@ -47,6 +50,10 @@ for image in images:
     train_names.append(image[:-5])
 
 
+
+''''
+Saving Colour correspending to classes
+'''
 train_id_to_color=np.array([(225 ,229 ,204),
  ( 70 , 70 , 70),
  (152, 152 , 79),
@@ -67,6 +74,9 @@ train_id_to_color=np.array([(225 ,229 ,204),
  (  0 ,  0 ,  0)])
 
 
+''''
+Labels
+'''
 allLabels= {
     0 : 'background',
         1 : 'wall',
@@ -89,7 +99,9 @@ allLabels= {
     }
 #=========================================================================================
 
-
+'''
+Checking the obstacle distance for voice feedback
+'''
 def howNear(value):
     ans=""
     if value>200:
@@ -100,7 +112,9 @@ def howNear(value):
         ans="far"
     return ans
 
-
+''''
+to run voice feedback in threads
+'''
 def threadingWindow(say_text):
     #print("djasjd")
     engine = pyttsx3.init()
@@ -113,21 +127,28 @@ def threadingWindow(say_text):
     engine.endLoop()
     
 
+'''Script to handle depth image with model output'''
 def GetFeedback(mask1D, maskH):
     
     pavementLabels=[4,5,12,15]
     obstacleLabels=[1,2,7,9,10,13]
     otherLabels=[0,3,14,16,6,8]
     
+    '''
+    Our target area pixels in the image
+    '''
     targetArea= mask1D[200:,200:500]
     targetmaskH = maskH[200:,200:500]
     
 
+    ''''Getting Unique classes existing in the target area'''
     uniqueValues, counts=np.unique(targetArea,return_counts=True) ## returning Unique Values in the region and which targets have max pixels
     uv=[]
     co=[]
     for index, (value, count) in enumerate(zip(uniqueValues, counts)): ## Removing targets with less than 50 pixels
-        
+        '''
+        The target area classes must have pixels greater than a threshold
+        '''
         if count < 500:
             continue
         
@@ -136,16 +157,14 @@ def GetFeedback(mask1D, maskH):
         
     uniqueValues=np.array(uv)
     counts=np.array(co)
-    
-    # print(uniqueValues)
-    # print(counts)       
-            
 
+
+    '''Sorting Indices to get the most occured values'''
     sortedIndices=np.argsort(-counts) ## descending order sorting
 
-    # print(uniqueValues[sortedIndices[0]]) ## Fetching Max Value
     closestObstacle=""
 
+    '''Finding the obstacles that have closest distances'''
     maxDepth=np.max(targetmaskH)
     closeObstaclesDepth=np.argwhere(targetmaskH==maxDepth)
     res=list(map(tuple, closeObstaclesDepth))
@@ -159,7 +178,7 @@ def GetFeedback(mask1D, maskH):
             closestObstacle=obsU[i]
             break
              
-
+            '''Finding one pavement label from labels'''
     pavement=False
     obstacleCount=0
     pavementFeedback=[]
@@ -185,25 +204,18 @@ def GetFeedback(mask1D, maskH):
                 obstacleFeedback.append(allLabels[label])
                 obstacleCount+=1
    
+    '''Appending text for voice feedback'''
     say_text=""
     for label in pavementFeedback:
         # engine.setProperty('rate', 200)
         say_text+="On "+label
-        #engine.say("walking on "+ label )
-        #engine.runAndWait()
     
     for index, label in enumerate(obstacleFeedback):
         if index==0 and closestObstacle!="":
             say_text+=" "+label +" "+ howNear(maxDepth)
-            #engine.say(label + howNear(maxDepth))
-            #engine.runAndWait()
         else:
             say_text+=" "+label+" ahead"
-            #engine.say(label + "ahead")
-            #engine.runAndWait()
 
-    # engine.iterate() must be called inside Server_Up.start()
-    # Server_Up = threading.Thread(target = )
 
     Server_Up= threading.Thread(target=threadingWindow, args=(say_text,))
     Server_Up.start()
@@ -213,7 +225,7 @@ def GetFeedback(mask1D, maskH):
 
     return feedbackLabels
 
-
+#Transformation Applied to a Image from a live feed
 def transform_image(image):
     my_transforms = transforms.Compose([
         transforms.Resize((480,640)),
@@ -222,15 +234,18 @@ def transform_image(image):
     image=Image.fromarray(image)
     return my_transforms(image).unsqueeze(0)
 
+#Pass Image to the model and get predictions
 def get_prediction(image_bytes):
     tensor = transform_image(image_bytes)
     outputs = model.forward(tensor)[0]
     output_predictions = outputs.argmax(0)
     return output_predictions
 
+#Decode Target to Color Image
 def decode_target(target):
     return train_id_to_color[target]
 
+#Get Image Output and Voice Feedback 
 def passImage(image,depth):
     output_prediction = get_prediction(image)
     img=decode_target(np.array(output_prediction.cpu())).astype(np.uint8)
@@ -239,16 +254,19 @@ def passImage(image,depth):
     #print(val)
     return img,val
 
+#Helper Function to Convert numpyImage to PIL
 def to_image(numpy_img):
     img = Image.fromarray(numpy_img, 'RGB')
     return img
 
+#To Show live screen on webpage
 def to_data_uri(pil_img):
     data = BytesIO()
     pil_img.save(data, "PNG") 
     data64 = base64.b64encode(data.getvalue())
     return u'data:img/jpeg;base64,'+data64.decode('utf-8')
 
+'''Predicting Face Recognition on Runtime'''
 def faceDetection(test_image):
     test_face_patches = face_recognition.face_locations(test_image, model="hog")
     test_face_encodings=face_recognition.face_encodings(test_image, test_face_patches)
@@ -267,6 +285,7 @@ def faceDetection(test_image):
 
     return faces
 
+#Pass a frame from feed and show results on webpage
 def gen_frames1():
     success, frame = camera.read() 
     success, depth = camera_depth.read()
