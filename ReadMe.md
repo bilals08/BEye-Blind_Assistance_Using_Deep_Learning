@@ -25,10 +25,10 @@ All the models were trained and finetuned on ADE-20K Screen Parsing, COCO stuff,
 
 Below are the stages done illustrated by 'Done' and rest are our future work.
 
-1. **Stage #1:** Extracting the RGB-D Image from Sensor      ——>Done
-2. **Stage #2:** Model Setup and Predictions      ——> Done
-3. **Stage #3:** Combining RGB Image with Depth Map & Giving Real-time Alerts   ——> Pending
-4. **Stage #4:**  Final Refined Working Product     ——> Pending
+1. **Stage #1:** Extracting the RGB-D Image from Sensor
+2. **Stage #2:** Model Setup and Predictions 
+3. **Stage #3:** Combining RGB Image with Depth Map & Giving Real-time Alerts (Obstacle Avoidance, Person Identification)
+4. **Stage #4:**  Final Refined Working Product
 
 # Guidelines
 
@@ -135,6 +135,10 @@ The size of the UNET with Efficient Net-b0 became too large and it took around 2
 
 Feel free to contact us for further details.
 
+**Muhammad Bilal Shabbir**
+ *bilal.shabbir@nu.edu.pk*
+ *FAST NUCES, Islamabad*
+
 **Sohaib Akhtar**
 *i170330@nu.edu.pk*
 *FAST NUCES, Islamabad*
@@ -142,8 +146,4 @@ Feel free to contact us for further details.
 **Ali Salman**
 *i170350@nu.edu.pk*
 *FAST NUCES, Islamabad*
-
-**Muhammad Bilal Shabbir**
- *i170124@nu.edu.pk*
- *FAST NUCES, Islamabad*
 
